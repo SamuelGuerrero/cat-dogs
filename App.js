@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 
 import * as tf from "@tensorflow/tfjs";
+import * as mobilenet from "@tensorflow-models/mobilenet";
 
 export default function App() {
   let cameraRef = useRef();
@@ -42,21 +43,18 @@ export default function App() {
     </Text>;
   }
 
-  const predict = async () => {
-    try {
-      const model = tf.loadGraphModel("model.h5");
+  const predict = async (newPhoto) => {
+    // const modelJson = require("./tfjs_target_dir/model.json");
 
-      // const image = tf.image.deco(photo);
+    const model = await tf.loadLayersModel('https://raw.githubusercontent.com/justin0u0/NTHU-OAuth-Decaptcha/master/cnn-decaptcha/model/tensorflowjs/model.json');
 
-      // const imageTensor = tf.expandDims(image, 0);
+    console.warn("JAJA");
 
-      // const prediction = model.predict(imageTensor);
-
-      // const classIndex = prediction.argMax();
-      // const className = model.classes[classIndex];
-
-      // console.log(className);
-    } catch (error) {}
+    const imageTensor = tf.browser.fromPixels({ uri: newPhoto.uri });
+    const processedImage = tf.image.resizeBilinear(imageTensor, [224, 224]);
+    const inputTensor = tf.expandDims(processedImage, 0);
+    const predictions = await model.predict(inputTensor);
+    console.log("Predictions:", predictions);
   };
 
   const takePic = async () => {
@@ -68,9 +66,8 @@ export default function App() {
 
     const newPhoto = await cameraRef.current.takePictureAsync(options);
 
-    const auxPhoto = Image;
-    //console.warn(newPhoto);
     setPhoto(newPhoto);
+    predict(newPhoto);
   };
 
   if (photo) {
@@ -125,7 +122,7 @@ export default function App() {
   }
 
   return (
-    <Camera style={styles.container} ref={cameraRef}>
+    <Camera ratio="20:10" style={styles.container} ref={cameraRef}>
       <Text style={styles.predictionText}>Centre la imágen en el cuadro</Text>
       <View
         style={{ borderColor: "#000", width: 280, height: 280, borderWidth: 3 }}
