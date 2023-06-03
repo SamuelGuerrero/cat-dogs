@@ -22,10 +22,12 @@
     "expo-status-bar": "~1.4.4",
     "fs": "^0.0.1-security",
     "jimp": "^0.22.8",
+    "nativewind": "^2.0.11",
     "path": "^0.12.7",
     "react": "18.2.0",
     "react-native": "0.71.8",
-    "react-native-fs": "^2.20.0"
+    "react-native-fs": "^2.20.0",
+    "tailwindcss": "^3.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

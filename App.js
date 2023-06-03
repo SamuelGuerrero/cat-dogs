@@ -2,27 +2,24 @@ import { StatusBar } from "expo-status-bar";
 import {
   Button,
   Image,
-  ImageBackground,
   SafeAreaView,
-  StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { Camera } from "expo-camera";
-import { shareAsync } from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 
 import * as tf from "@tensorflow/tfjs";
-import * as mobilenet from "@tensorflow-models/mobilenet";
 
 export default function App() {
   let cameraRef = useRef();
   const [hasCameraPermission, setHasCameraPermission] = useState();
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
   const [photo, setPhoto] = useState();
-  const [prediction, setPrediction] = useState("Gato");
+  const [prediction, setPrediction] = useState("Perro");
 
   useEffect(() => {
     (async () => {
@@ -42,19 +39,34 @@ export default function App() {
       Permission for camera not granted. Please change this in settings.
     </Text>;
   }
+  //"https://raw.githubusercontent.com/Bobingstern/TicTacToeAI/main/tfjs_app/model/model.json"
 
-  const predict = async (newPhoto) => {
-    // const modelJson = require("./tfjs_target_dir/model.json");
+  const loadModel = async () => {
+    await tf.ready();
+    console("Funciona")
+    // const model1 = getModel();
+    // const model = await tf.loadLayersModel(model1);
+    // console.log(model1.predict(photo))
+    // console.log(model1);
+  };
 
-    const model = await tf.loadLayersModel('https://raw.githubusercontent.com/justin0u0/NTHU-OAuth-Decaptcha/master/cnn-decaptcha/model/tensorflowjs/model.json');
+  const getModel = () => {
+    return fetch(
+      "https://storage.googleapis.com/tfjs-models/tfjs/mnist_transfer_cnn_v1/model.json"
+    )
+      .then((response) => response.json())
+      .then((model) => {
+        console.warn(model)
+        return model;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
 
-    console.warn("JAJA");
-
-    const imageTensor = tf.browser.fromPixels({ uri: newPhoto.uri });
-    const processedImage = tf.image.resizeBilinear(imageTensor, [224, 224]);
-    const inputTensor = tf.expandDims(processedImage, 0);
-    const predictions = await model.predict(inputTensor);
-    console.log("Predictions:", predictions);
+  const predict = async (image) => {
+    const prediction = await model.predict(image);
+    return prediction;
   };
 
   const takePic = async () => {
@@ -67,100 +79,68 @@ export default function App() {
     const newPhoto = await cameraRef.current.takePictureAsync(options);
 
     setPhoto(newPhoto);
-    predict(newPhoto);
   };
 
   if (photo) {
-    const sharePic = () => {
-      shareAsync(photo.uri).then(() => {
-        setPhoto(undefined);
-      });
-    };
-
-    const savePhoto = () => {
-      MediaLibrary.saveToLibraryAsync(photo.uri).then(() => {
-        setPhoto(undefined);
-      });
-    };
-
     return (
-      <ImageBackground
-        style={{
-          width: "100%",
-          height: "100%",
-          flex: 1,
-          justifyContent: "center",
-        }}
-        source={{ uri: "https://i.postimg.cc/wML28nQp/Al-Ed-fondo.png" }}
-      >
-        <SafeAreaView style={styles.containerMain}>
+      <View className="w-full h-full flex-1 justify-center bg-[#FCF7F8]">
+        <SafeAreaView className="flex-1 items-center justify-center">
           <View>
             {prediction ? (
-              <Text style={styles.predictionText}>{prediction}</Text>
+              <Text className="text-[#4E8098] font-semibold text-4xl">
+                {prediction}
+              </Text>
             ) : undefined}
           </View>
-          <Image
-            source={{ uri: "data:image/jpg;base64," + photo.base64 }}
-            style={{ width: 280, height: 280, borderRadius: 10 }}
-          />
-          <View
-            style={{ display: "flex", flexDirection: "row", marginTop: 40 }}
-          >
-            {hasMediaLibraryPermission ? (
-              <Button title="Guardar" onPress={savePhoto} />
-            ) : undefined}
-            <Button
-              style={{ backgroundColor: "#FFF" }}
-              title="Descartar"
-              onPress={() => setPhoto(undefined)}
+          <View className="shadow-xl shadow-black">
+            <Image
+              source={{ uri: "data:image/jpg;base64," + photo.base64 }}
+              className="w-72 h-72 rounded-xl"
             />
           </View>
-          {/* <Text style={{ color: "#ff0000" }}>{prediction}</Text> */}
+          <View className="w-full h-20 bg-[#4E8098] rounded-tr-2xl rounded-tl-2xl absolute bottom-0">
+            <View className="flex flex-row w-full space-x-20 h-full justify-center items-center">
+              {hasMediaLibraryPermission ? (
+                <TouchableOpacity
+                  className="bg-[#90C2E7] flex justify-center items-center rounded-lg h-12 w-28 shadow-lg shadow-black"
+                  onPress={loadModel}
+                >
+                  <Text className="text-[#FCF7F8] text-xl font-bold">
+                    Predecir
+                  </Text>
+                </TouchableOpacity>
+              ) : undefined}
+              <TouchableOpacity
+                className="bg-[#A31621] flex justify-center items-center rounded-lg h-12 w-28 shadow-lg shadow-black "
+                onPress={() => setPhoto(undefined)}
+              >
+                <Text className="text-[#FCF7F8] text-xl font-bold">
+                  Descartar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </SafeAreaView>
-      </ImageBackground>
+      </View>
     );
   }
 
   return (
-    <Camera ratio="20:10" style={styles.container} ref={cameraRef}>
-      <Text style={styles.predictionText}>Centre la imágen en el cuadro</Text>
+    <Camera
+      ratio="20:10"
+      className="flex-1 flex items-center justify-center"
+      ref={cameraRef}
+    >
+      <Text className="mb-3 text-white font-semibold text-xl">
+        Centre la imágen en el cuadro
+      </Text>
       <View
         style={{ borderColor: "#000", width: 280, height: 280, borderWidth: 3 }}
       ></View>
-      <View style={styles.buttonContainer}>
+      <View className="bg-white absolute bottom-12">
         <Button title="Tomar foto" onPress={takePic} />
       </View>
       <StatusBar style="auto" />
     </Camera>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  predictionText: {
-    marginBottom: 10,
-    color: "#FFF",
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  containerMain: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 100,
-  },
-  buttonContainer: {
-    backgroundColor: "#FFF",
-    position: "absolute",
-    bottom: 50,
-  },
-  preview: {
-    alignSelf: "stretch",
-    flex: 1,
-  },
-});
