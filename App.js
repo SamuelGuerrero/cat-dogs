@@ -40,7 +40,6 @@ export default function App() {
     </Text>;
   }
   //"https://raw.githubusercontent.com/Bobingstern/TicTacToeAI/main/tfjs_app/model/model.json"
-
   const loadModel = async () => {
     await tf.ready();
     console("Funciona")
