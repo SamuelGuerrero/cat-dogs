@@ -46,7 +46,6 @@ export default function App() {
     // const model1 = getModel();
     // const model = await tf.loadLayersModel(model1);
     // console.log(model1.predict(photo))
-    // console.log(model1);
   };
 
   const getModel = () => {
