@@ -43,9 +43,6 @@ export default function App() {
   const loadModel = async () => {
     await tf.ready();
     console("Funciona")
-    // const model1 = getModel();
-    // const model = await tf.loadLayersModel(model1);
-    // console.log(model1.predict(photo))
   };
 
   const getModel = () => {
